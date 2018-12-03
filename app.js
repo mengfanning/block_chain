@@ -19,6 +19,4 @@ app.use(async (ctx, next) => {
 
 app.use(index.routes(), index.allowedMethods())
 
-app.listen(3000, () => {
-  console.log('please listen port at 3000')
-})
+module.exports = app;

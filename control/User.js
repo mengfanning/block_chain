@@ -1,4 +1,5 @@
 const fs = require('fs')
+const path = require('path')
 
 
 exports.login = async (ctx) => {
@@ -6,8 +7,7 @@ exports.login = async (ctx) => {
 }
 
 exports.signin = async (ctx) => {
-  ctx.header = {
-    ContentType: "application/octet-stream",
-  }
-  fs.createReadStream('../public/index.css').pipe(ctx.res)
+  ctx.set('Content-Type', "application/octet-stream")
+  ctx.status = 200;
+  fs.createReadStream(path.join(__dirname, '../public/index.txt')).pipe(ctx.res)
 }
