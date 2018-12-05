@@ -4,6 +4,11 @@ const path = require('path')
 const bodyparser = require('koa-bodyparser')
 const index = require('./routers/index')
 
+process.on('uncaughtException', function (err) {
+	// logger.fatal('System error', { message: err.message, stack: err.stack });
+	process.emit('cleanup');
+});
+
 app.use(bodyparser({
   enableTypes: ['json', 'form', 'text']
 }))
