@@ -4,7 +4,7 @@
 module.exports = async (ctx, next) => {
   const cookie = ctx.cookies.get('token')
   if(cookie) {
-    next()
+    return next()
   } else {
     ctx.status = 403
   }
