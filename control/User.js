@@ -1,6 +1,11 @@
 /**
  * 用户类
  */
+// const fs = require('fs')
+// const path = require('path')
+// const crypto = require('crypto')
+// const rsa_private = fs.readFileSync(path.join(__dirname, '../rsa_private_key.pem'))
+
 const UserMethods = require('../dbHelpders/user')
 
 // 登录参数校验
@@ -19,9 +24,33 @@ exports.checkLoginParams = async (ctx, next) => {
 // 登录
 exports.login = async (ctx, next) => {
   const params = ctx.request.body;
-  ctx.body = {
-    status: 0,
-    msg: '登录成功',
+  const { userName, passWord } = params;
+  try {
+    const userDocs = await UserMethods.findUser({ userName })
+    if (userDocs) {
+      // const result = crypto.privateDecrypt({ key: rsa_private, padding: crypto.constants.RSA_PKCS1_PADDING}, new Buffer(passWord, 'base64'))
+      if (userDocs.passWord == passWord) {
+        ctx.body = {
+          status: 0,
+          msg: '登录成功',
+        }
+      } else {
+        ctx.body = {
+          msg: '账号密码错误',
+          status: -6
+        }
+      }
+    } else {
+      ctx.body = {
+        msg: '用户不存在',
+        status: -5
+      }
+    }
+  } catch (error) {
+    ctx.status = 500
+    ctx.body = {
+      error: error
+    }
   }
 }
 
@@ -29,7 +58,15 @@ exports.login = async (ctx, next) => {
 exports.checkRegisterParams = async (ctx, next) => {
   const { userName, passWord } = ctx.request.body;
   if (userName && passWord) {
-    return next()
+    const reg = new RegExp("^[A-Za-z0-9\u4e00-\u9fa5]+@[a-zA-Z0-9_-]+(\.[a-zA-Z0-9_-]+)+$"); 
+    if (!reg.test(userName)) {
+      ctx.body = {
+        status: -2,
+        msg: '邮箱格式不正确'
+      }
+    } else {
+      return next()
+    }
   } else {
     ctx.body = {
       status: -1,
@@ -44,7 +81,7 @@ exports.register = async (ctx, next) => {
   const status = await UserMethods.findUser({ userName })
   if (status) {
     ctx.body = {
-      status: -2,
+      status: -3,
       msg: '该用户已被注册'
     }
   } else {
@@ -53,6 +90,11 @@ exports.register = async (ctx, next) => {
       ctx.body = {
         status: 0,
         msg: '注册成功'
+      }
+    } else {
+      status.body = {
+        status: -4,
+        msg: '添加失败'
       }
     }
   }

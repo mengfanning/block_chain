@@ -11,7 +11,7 @@ exports.userNameRatelimit = ratelimit({
     return ctx.request.body.userName;
   },
   errorMessage: { 
-    status: -1,
+    status: -10,
     msg: '请求速度过快请稍后重试' 
   },
 });
