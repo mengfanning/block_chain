@@ -10,11 +10,11 @@ const congfig = require('./config')
 
 program
   .version('0.1.0')
-  .option('-p, --peppers', 'Add peppers')
-  .option('-P, --pineapple', 'Add pineapple')
-  .option('-b, --bbq-sauce', 'Add bbq sauce')
-  .option('-c, --cheese [type]', 'Add the specified type of cheese [marble]', 'marble')
+  .option('-e, --emailpass [value]', 'email password')
   .parse(process.argv);
+if (program.emailpassword) {
+  global.emailpass = program.emailpass
+} 
 
 process.on('uncaughtException', function (err) {
 	// logger.fatal('System error', { message: err.message, stack: err.stack });

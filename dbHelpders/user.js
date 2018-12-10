@@ -12,7 +12,7 @@ module.exports = {
   // 添加用户
   addUser: (params) => {
     return new Promise((resolve, reject) => {
-      const userModel = new UsersModel({...params, status: 1 }); // 默认状态为true
+      const userModel = new UsersModel({ ...params, status: 1 }); // 默认状态为true
       userModel.save((err) => {
         if (err) {
           reject(false)
