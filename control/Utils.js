@@ -3,6 +3,7 @@ const Redis = require('../redis')
 const crypto = require('crypto')
 const fs = require('fs')
 const path = require('path')
+const nodeMailer = require('../tools/nodemailer')
 
 const rsa_public = fs.readFileSync(path.join(__dirname, '../rsa_public_key.pem'))
 
@@ -26,7 +27,7 @@ exports.getCaptcha = async (ctx, next) => {
 
 // 校验验证码
 exports.verifyCaptcha = async (ctx, next) => {
-  const captcha = ctx.request.body.captcha;
+  const { captcha } = ctx.request.body;
   const captchaKey = ctx.cookies.get('captchaKey')
   const _checkStatus = await Redis.get(`cpt_${captchaKey}`)
   if (_checkStatus) {
@@ -42,6 +43,36 @@ exports.verifyCaptcha = async (ctx, next) => {
     ctx.body = {
       status: -3,
       msg: '验证码失效,请重新获取',
+    }
+  }
+}
+
+// 发送邮箱验证啊
+exports.sendMail = async (ctx, next) => {
+  const { userName } = ctx.request.body;
+  const reg = new RegExp("^[A-Za-z0-9\u4e00-\u9fa5]+@[a-zA-Z0-9_-]+(\.[a-zA-Z0-9_-]+)+$");
+  if (!reg.test(userName)) {
+    ctx.body = {
+      status: -1,
+      msg: '邮箱格式不正确'
+    }
+  } else {
+    const code = crypto.randomBytes(4).toString('hex')
+    const status = await nodeMailer({
+      target: userName,
+      text: code,
+    }).catch(() => {
+      ctx.body = {
+        status: -2,
+        msg: '发送失败'
+      }
+    })
+    if (status) {
+      Redis.set(`ecode_${userName}`, code, 'EX', 300)
+      ctx.body = {
+        status: 0,
+        msg: '发送成功'
+      }
     }
   }
 }

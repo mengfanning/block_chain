@@ -5,7 +5,7 @@
 // const path = require('path')
 // const crypto = require('crypto')
 // const rsa_private = fs.readFileSync(path.join(__dirname, '../rsa_private_key.pem'))
-
+const Redis = require('../redis')
 const UserMethods = require('../dbHelpders/user')
 
 // 登录参数校验
@@ -56,8 +56,8 @@ exports.login = async (ctx, next) => {
 
 // 注册参数验证
 exports.checkRegisterParams = async (ctx, next) => {
-  const { userName, passWord } = ctx.request.body;
-  if (userName && passWord) {
+  const { userName, passWord, eCode } = ctx.request.body;
+  if (userName && passWord && eCode) {
     const reg = new RegExp("^[A-Za-z0-9\u4e00-\u9fa5]+@[a-zA-Z0-9_-]+(\.[a-zA-Z0-9_-]+)+$"); 
     if (!reg.test(userName)) {
       ctx.body = {
@@ -77,7 +77,7 @@ exports.checkRegisterParams = async (ctx, next) => {
 
 // 注册
 exports.register = async (ctx, next) => {
-  const { userName, passWord } = ctx.request.body;
+  const { userName, passWord, eCode } = ctx.request.body;
   const status = await UserMethods.findUser({ userName })
   if (status) {
     ctx.body = {
@@ -85,16 +85,32 @@ exports.register = async (ctx, next) => {
       msg: '该用户已被注册'
     }
   } else {
-    const status = await UserMethods.addUser({ userName, passWord })
-    if (status) {
-      ctx.body = {
-        status: 0,
-        msg: '注册成功'
+    const _risEcode = await Redis.get(`ecode_${userName}`)
+    console.log(_risEcode, eCode, userName)
+    if (_risEcode) {
+      if (_risEcode === eCode) {
+        const status = await UserMethods.addUser({ userName, passWord })
+        if (status) {
+          ctx.body = {
+            status: 0,
+            msg: '注册成功'
+          }
+        } else {
+          status.body = {
+            status: -6,
+            msg: '添加失败'
+          }
+        }
+      } else {
+        ctx.body = {
+          status: -5,
+          msg: '验证码不正确'
+        }
       }
     } else {
-      status.body = {
+      ctx.body = {
         status: -4,
-        msg: '添加失败'
+        msg: '验证码失效'
       }
     }
   }

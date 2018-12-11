@@ -15,3 +15,17 @@ exports.userNameRatelimit = ratelimit({
     msg: '请求速度过快请稍后重试' 
   },
 });
+
+// 发送邮箱
+exports.sendMailRatelimit = ratelimit({  
+  db: Redis,
+  duration: 600000,
+  max: 10,
+  id: function (ctx) {
+    return ctx.request.body.userName;
+  },
+  errorMessage: { 
+    status: -10,
+    msg: '请求速度过快请稍后重试' 
+  },
+});
