@@ -57,21 +57,25 @@ exports.sendMail = async (ctx, next) => {
       msg: '邮箱格式不正确'
     }
   } else {
-    const code = crypto.randomBytes(4).toString('hex')
-    const status = await nodeMailer({
-      target: userName,
-      text: code,
-    }).catch(() => {
+    try {
+      const code = crypto.randomBytes(4).toString('hex')
+      const status = await nodeMailer({
+        target: userName,
+        text: code,
+      }).catch((err) => {
+        throw new Error(err)
+      })
+      if (status) {
+        Redis.set(`ecode_${userName}`, code, 'EX', 300)
+        ctx.body = {
+          status: 0,
+          msg: '发送成功'
+        }
+      }
+    } catch (error) {
       ctx.body = {
         status: -2,
         msg: '发送失败'
-      }
-    })
-    if (status) {
-      Redis.set(`ecode_${userName}`, code, 'EX', 300)
-      ctx.body = {
-        status: 0,
-        msg: '发送成功'
       }
     }
   }

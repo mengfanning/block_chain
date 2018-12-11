@@ -3,10 +3,14 @@ const Koa = require('koa')
 const app = new Koa()
 const path = require('path')
 const bodyparser = require('koa-bodyparser')
+const logger = require('koa-logger')
+const onError = require('koa-onerror')
 const mongoose = require('mongoose')
 const users = require('./routes/user')
 const utils = require('./routes/utils')
 const congfig = require('./config')
+
+onError(app)
 
 program
   .version('0.1.0')
@@ -20,6 +24,10 @@ process.on('uncaughtException', function (err) {
 	// logger.fatal('System error', { message: err.message, stack: err.stack });
 	process.emit('cleanup');
 });
+
+app.use(logger((str, args)=> {
+  console.log(str)
+}))
 
 app.use(bodyparser({
   enableTypes: ['json', 'form', 'text']
@@ -35,7 +43,7 @@ app.use(async (ctx, next) => {
 })
 
 // connect mongoDB
-mongoose.connect(congfig.mongodb)
+mongoose.connect(congfig.mongodb,  { useNewUrlParser: true } )
 const DB = mongoose.connection;
 DB.on('error', (err) => {
   console.log(`mongodb Error =====> ${err}`)

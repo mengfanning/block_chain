@@ -86,7 +86,6 @@ exports.register = async (ctx, next) => {
     }
   } else {
     const _risEcode = await Redis.get(`ecode_${userName}`)
-    console.log(_risEcode, eCode, userName)
     if (_risEcode) {
       if (_risEcode === eCode) {
         const status = await UserMethods.addUser({ userName, passWord })

@@ -16,7 +16,7 @@ exports.userNameRatelimit = ratelimit({
   },
 });
 
-// 发送邮箱
+// 发送邮箱接口请求限制
 exports.sendMailRatelimit = ratelimit({  
   db: Redis,
   duration: 600000,

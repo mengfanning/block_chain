@@ -9,7 +9,7 @@ module.exports = function (myoptions) {
         port: 25, // port for secure SMTP
         auth: {
           user: "15137562600@163.com",
-          pass:"abcd1234",
+          pass:"abcd17234",
         }
       });
       let mailOptions = {
@@ -21,8 +21,7 @@ module.exports = function (myoptions) {
       };
       transporter.sendMail(mailOptions, (error, info) => {
         if (error) {
-          console.log(error, '88')
-          reject(false)
+          reject(error)
         }
         resolve(true)
       });
